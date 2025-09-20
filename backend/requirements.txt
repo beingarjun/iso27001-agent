@@ -1,31 +1,156 @@
-# FastAPI and web framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+# Enterprise dependencies for audit-grade compliance platformfastapi==0.104.1# Core FastAPI framework# FastAPI and web framework
 
-# Database and ORM
-sqlmodel==0.0.14
+fastapi==0.104.1
+
+uvicorn[standard]==0.24.0uvicorn[standard]==0.24.0
+
+pydantic-settings==2.0.3
+
+sqlmodel==0.0.14pydantic-settings==2.0.3fastapi==0.104.1fastapi==0.104.1
+
 aiosqlite==0.19.0
 
-# Settings and configuration
-pydantic-settings==2.1.0
+sqlmodel==0.0.14
 
-# LangChain and AI
-langchain==0.1.0
+# AI and workflow orchestration
+
+langchain==0.1.0aiosqlite==0.19.0uvicorn[standard]==0.24.0uvicorn[standard]==0.24.0
+
 langgraph==0.0.20
-langchain-openai==0.0.5
-langchain-community==0.0.10
 
-# Security scanning tools
+langchain-openai==0.0.2langchain==0.1.0
+
+
+
+# Security scanning toolslanggraph==0.0.20python-multipart==0.0.6python-multipart==0.0.6
+
 safety==2.3.5
-bandit==1.7.5
 
-# YAML support
-PyYAML==6.0.1
+bandit==1.7.5langchain-openai==0.0.2
 
-# HTTP requests
+semgrep==1.45.0
+
+pyyaml==6.0.1
+
+# Infrastructure and cloud security
+
+boto3==1.34.0safety==2.3.5
+
+azure-identity==1.15.0
+
+google-cloud-storage==2.10.0bandit==1.7.5# Database# Database and ORM
+
+
+
+# Cryptography and hashingcryptography==41.0.8
+
+cryptography==41.0.8
+
+hashlib-compat==1.0.1httpx==0.25.2sqlmodel==0.0.14sqlmodel==0.0.14
+
+
+
+# HTTP and networkingpytest==7.4.3
+
 httpx==0.25.2
-requests==2.31.0
+
+requests==2.31.0pytest-asyncio==0.21.1aiosqlite==0.19.0aiosqlite==0.19.0
+
+
+
+# Configuration and utilities
+
+pyyaml==6.0.1
+
+python-multipart==0.0.6# Authentication & Security# Settings and configuration
+
+python-jose[cryptography]==3.3.0
+
+passlib[bcrypt]==1.7.4PyJWT==2.8.0pydantic-settings==2.1.0
+
+
+
+# Database and ORMbcrypt==4.1.2
+
+alembic==1.12.1
+
+psycopg2-binary==2.9.9python-jose[cryptography]==3.3.0# Authentication and security
+
+
+
+# Authentication and authorizationpasslib[bcrypt]==1.7.4PyJWT==2.8.0
+
+python-google-auth==2.23.4
+
+authlib==1.2.1bcrypt==4.1.2
+
+
+
+# File handling and storage# Environment & Settingspython-jose[cryptography]==3.3.0
+
+pillow==10.1.0
+
+pypdf2==3.0.1python-dotenv==1.0.0passlib[bcrypt]==1.7.4
+
+reportlab==4.0.7
+
+pydantic-settings==2.1.0google-auth==2.25.2
+
+# Task queue and background processing
+
+celery[redis]==5.3.4google-auth-oauthlib==1.1.0
+
+redis==5.0.1
+
+# Google OAuthgoogle-auth-httplib2==0.1.1
+
+# Monitoring and observability
+
+prometheus-client==0.19.0google-auth==2.25.2
+
+structlog==23.2.0
+
+google-auth-oauthlib==1.1.0# LangChain and AI
+
+# Testing
+
+pytest==7.4.3langchain==0.1.0
+
+pytest-asyncio==0.21.1
+
+pytest-cov==4.1.0# AI Librarieslanggraph==0.0.20
+
+httpx==0.25.2
+
+openai==1.3.7langchain-openai==0.0.5
+
+# Development tools
+
+black==23.11.0langchain==0.1.0langchain-community==0.0.10
+
+isort==5.12.0
+
+mypy==1.7.1langchain-openai==0.0.5
+
+langgraph==0.0.20# Security scanning tools
+
+safety==2.3.5
+
+# HTTP & Utilitiesbandit==1.7.5
+
+httpx==0.25.2
+
+requests==2.31.0# YAML support
+
+PyYAML==6.0.1PyYAML==6.0.1
+
+
+
+# Testing# HTTP requests
+
+pytest==7.4.3httpx==0.25.2
+
+pytest-asyncio==0.21.1requests==2.31.0
 
 # Date/time utilities
 python-dateutil==2.8.2

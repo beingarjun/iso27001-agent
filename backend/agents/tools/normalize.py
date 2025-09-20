@@ -1,161 +1,318 @@
-"""
+from typing import Dict, Any, List"""
+
 Tools for normalizing and summarizing security scan results
-"""
-from typing import Dict, Any, List
-from datetime import datetime
 
+def summarize_npm_audit(audit_data: Dict[str, Any]) -> Dict[str, Any]:"""
 
-def summarize_npm_audit(npm_result: Dict[str, Any]) -> Dict[str, Any]:
-    """Normalize npm audit results into standard format"""
+    """Normalize npm audit results"""from typing import Dict, Any, List
+
+    if not audit_data or "vulnerabilities" not in audit_data:from datetime import datetime
+
+        return {"total_vulns": 0, "by_severity": {}, "critical_packages": []}
+
     
-    if not npm_result.get("success", False):
-        return {
-            "scanner": "npm_audit",
-            "success": False,
-            "error": npm_result.get("error", "Unknown error"),
-            "total_vulns": 0,
-            "severity_breakdown": {"low": 0, "moderate": 0, "high": 0, "critical": 0},
-            "recommendations": []
-        }
-    
-    vulnerabilities = npm_result.get("vulnerabilities", {})
-    metadata = npm_result.get("metadata", {})
-    
-    # Count vulnerabilities by severity
-    severity_counts = {"low": 0, "moderate": 0, "high": 0, "critical": 0}
-    vulnerable_packages = []
-    
-    for pkg_name, vuln_info in vulnerabilities.items():
-        if isinstance(vuln_info, dict):
-            severity = vuln_info.get("severity", "low").lower()
-            severity_counts[severity] = severity_counts.get(severity, 0) + 1
-            
-            vulnerable_packages.append({
+
+    vulnerabilities = audit_data.get("vulnerabilities", {})def summarize_npm_audit(npm_result: Dict[str, Any]) -> Dict[str, Any]:
+
+    by_severity = {"critical": 0, "high": 0, "moderate": 0, "low": 0, "info": 0}    """Normalize npm audit results into standard format"""
+
+    critical_packages = []    
+
+        if not npm_result.get("success", False):
+
+    for package, vuln_info in vulnerabilities.items():        return {
+
+        if isinstance(vuln_info, dict):            "scanner": "npm_audit",
+
+            severity = vuln_info.get("severity", "info").lower()            "success": False,
+
+            if severity in by_severity:            "error": npm_result.get("error", "Unknown error"),
+
+                by_severity[severity] += 1            "total_vulns": 0,
+
+                        "severity_breakdown": {"low": 0, "moderate": 0, "high": 0, "critical": 0},
+
+            if severity in ["critical", "high"]:            "recommendations": []
+
+                critical_packages.append({        }
+
+                    "package": package,    
+
+                    "severity": severity,    vulnerabilities = npm_result.get("vulnerabilities", {})
+
+                    "title": vuln_info.get("title", ""),    metadata = npm_result.get("metadata", {})
+
+                    "range": vuln_info.get("range", "")    
+
+                })    # Count vulnerabilities by severity
+
+        severity_counts = {"low": 0, "moderate": 0, "high": 0, "critical": 0}
+
+    total_vulns = sum(by_severity.values())    vulnerable_packages = []
+
+        
+
+    return {    for pkg_name, vuln_info in vulnerabilities.items():
+
+        "total_vulns": total_vulns,        if isinstance(vuln_info, dict):
+
+        "by_severity": by_severity,            severity = vuln_info.get("severity", "low").lower()
+
+        "critical_packages": critical_packages[:10],  # Limit to top 10            severity_counts[severity] = severity_counts.get(severity, 0) + 1
+
+        "summary": f"Found {total_vulns} vulnerabilities ({by_severity['critical']} critical, {by_severity['high']} high)"            
+
+    }            vulnerable_packages.append({
+
                 "package": pkg_name,
-                "severity": severity,
-                "title": vuln_info.get("title", ""),
-                "url": vuln_info.get("url", ""),
-                "vulnerable_versions": vuln_info.get("range", "")
-            })
-    
-    total_vulns = sum(severity_counts.values())
-    
-    # Generate recommendations
-    recommendations = []
-    if total_vulns > 0:
-        recommendations.append("Run 'npm audit fix' to automatically fix vulnerabilities")
-        if severity_counts["high"] > 0 or severity_counts["critical"] > 0:
-            recommendations.append("Review and manually fix high/critical vulnerabilities")
-        recommendations.append("Consider using 'npm audit fix --force' for breaking changes")
-        recommendations.append("Update package.json to pin secure versions")
-    
-    return {
-        "scanner": "npm_audit",
-        "success": True,
-        "total_vulns": total_vulns,
+
+def summarize_safety(safety_data: List[Dict[str, Any]]) -> Dict[str, Any]:                "severity": severity,
+
+    """Normalize safety check results"""                "title": vuln_info.get("title", ""),
+
+    if not safety_data:                "url": vuln_info.get("url", ""),
+
+        return {"total_vulns": 0, "vulnerable_packages": [], "summary": "No known vulnerabilities found"}                "vulnerable_versions": vuln_info.get("range", "")
+
+                })
+
+    vulnerable_packages = []    
+
+    for vuln in safety_data:    total_vulns = sum(severity_counts.values())
+
+        vulnerable_packages.append({    
+
+            "package": vuln.get("package_name", "unknown"),    # Generate recommendations
+
+            "version": vuln.get("installed_version", "unknown"),    recommendations = []
+
+            "vulnerability": vuln.get("vulnerability_id", ""),    if total_vulns > 0:
+
+            "advisory": vuln.get("advisory", "")[:200] + "..." if len(vuln.get("advisory", "")) > 200 else vuln.get("advisory", "")        recommendations.append("Run 'npm audit fix' to automatically fix vulnerabilities")
+
+        })        if severity_counts["high"] > 0 or severity_counts["critical"] > 0:
+
+                recommendations.append("Review and manually fix high/critical vulnerabilities")
+
+    total_vulns = len(vulnerable_packages)        recommendations.append("Consider using 'npm audit fix --force' for breaking changes")
+
+            recommendations.append("Update package.json to pin secure versions")
+
+    return {    
+
+        "total_vulns": total_vulns,    return {
+
+        "vulnerable_packages": vulnerable_packages[:10],  # Limit to top 10        "scanner": "npm_audit",
+
+        "summary": f"Found {total_vulns} vulnerable packages"        "success": True,
+
+    }        "total_vulns": total_vulns,
+
         "severity_breakdown": severity_counts,
-        "vulnerable_packages": vulnerable_packages,
-        "recommendations": recommendations,
-        "scan_summary": f"Found {total_vulns} vulnerabilities in npm dependencies",
-        "metadata": metadata
-    }
 
+def summarize_bandit(bandit_data: Dict[str, Any]) -> Dict[str, Any]:        "vulnerable_packages": vulnerable_packages,
 
-def summarize_safety(safety_result: Dict[str, Any]) -> Dict[str, Any]:
-    """Normalize safety check results into standard format"""
-    
-    if not safety_result.get("success", False):
-        return {
-            "scanner": "safety",
-            "success": False,
-            "error": safety_result.get("error", "Unknown error"),
-            "total_vulns": 0,
-            "severity_breakdown": {"low": 0, "medium": 0, "high": 0},
-            "recommendations": []
+    """Normalize bandit scan results"""        "recommendations": recommendations,
+
+    if not bandit_data or "results" not in bandit_data:        "scan_summary": f"Found {total_vulns} vulnerabilities in npm dependencies",
+
+        return {"total_issues": 0, "counts": {}, "high_severity": [], "summary": "No security issues found"}        "metadata": metadata
+
         }
-    
-    vulnerabilities = safety_result.get("vulnerabilities", [])
-    
-    # Process vulnerabilities
-    severity_counts = {"low": 0, "medium": 0, "high": 0}
-    vulnerable_packages = []
-    
-    for vuln in vulnerabilities:
-        # Safety doesn't provide severity, so we estimate based on advisory
-        advisory = vuln.get("advisory", "").lower()
-        if any(word in advisory for word in ["critical", "remote code execution", "sql injection"]):
-            severity = "high"
-        elif any(word in advisory for word in ["moderate", "denial of service", "information disclosure"]):
+
+    results = bandit_data.get("results", [])
+
+    metrics = bandit_data.get("metrics", {}).get("_totals", {})
+
+    def summarize_safety(safety_result: Dict[str, Any]) -> Dict[str, Any]:
+
+    counts = {    """Normalize safety check results into standard format"""
+
+        "HIGH": metrics.get("SEVERITY.HIGH", 0),    
+
+        "MEDIUM": metrics.get("SEVERITY.MEDIUM", 0),    if not safety_result.get("success", False):
+
+        "LOW": metrics.get("SEVERITY.LOW", 0)        return {
+
+    }            "scanner": "safety",
+
+                "success": False,
+
+    high_severity = []            "error": safety_result.get("error", "Unknown error"),
+
+    for result in results:            "total_vulns": 0,
+
+        if result.get("issue_severity") == "HIGH":            "severity_breakdown": {"low": 0, "medium": 0, "high": 0},
+
+            high_severity.append({            "recommendations": []
+
+                "filename": result.get("filename", ""),        }
+
+                "line_number": result.get("line_number", 0),    
+
+                "test_name": result.get("test_name", ""),    vulnerabilities = safety_result.get("vulnerabilities", [])
+
+                "issue_text": result.get("issue_text", "")[:200] + "..." if len(result.get("issue_text", "")) > 200 else result.get("issue_text", "")    
+
+            })    # Process vulnerabilities
+
+        severity_counts = {"low": 0, "medium": 0, "high": 0}
+
+    total_issues = sum(counts.values())    vulnerable_packages = []
+
+        
+
+    return {    for vuln in vulnerabilities:
+
+        "total_issues": total_issues,        # Safety doesn't provide severity, so we estimate based on advisory
+
+        "counts": counts,        advisory = vuln.get("advisory", "").lower()
+
+        "high_severity": high_severity[:10],  # Limit to top 10        if any(word in advisory for word in ["critical", "remote code execution", "sql injection"]):
+
+        "summary": f"Found {total_issues} security issues ({counts['HIGH']} high, {counts['MEDIUM']} medium, {counts['LOW']} low)"            severity = "high"
+
+    }        elif any(word in advisory for word in ["moderate", "denial of service", "information disclosure"]):
+
             severity = "medium"
-        else:
-            severity = "low"
-        
-        severity_counts[severity] += 1
-        
-        vulnerable_packages.append({
-            "package": vuln.get("package_name", ""),
-            "severity": severity,
-            "installed_version": vuln.get("installed_version", ""),
-            "vulnerable_spec": vuln.get("vulnerable_spec", ""),
-            "advisory": vuln.get("advisory", ""),
-            "vulnerability_id": vuln.get("vulnerability_id", "")
-        })
-    
-    total_vulns = len(vulnerabilities)
-    
-    # Generate recommendations
-    recommendations = []
-    if total_vulns > 0:
-        recommendations.append("Update vulnerable Python packages to secure versions")
-        recommendations.append("Pin package versions in requirements.txt")
-        recommendations.append("Consider using virtual environments for isolation")
-        if severity_counts["high"] > 0:
-            recommendations.append("Prioritize fixing high-severity Python vulnerabilities")
-    
-    return {
-        "scanner": "safety",
-        "success": True,
-        "total_vulns": total_vulns,
-        "severity_breakdown": severity_counts,
-        "vulnerable_packages": vulnerable_packages,
-        "recommendations": recommendations,
-        "scan_summary": f"Found {total_vulns} vulnerabilities in Python dependencies"
-    }
 
+def summarize_ssl(ssl_data: Dict[str, Any]) -> Dict[str, Any]:        else:
 
-def summarize_bandit(bandit_result: Dict[str, Any]) -> Dict[str, Any]:
-    """Normalize bandit scan results into standard format"""
-    
-    if not bandit_result.get("success", False):
-        return {
-            "scanner": "bandit",
-            "success": False,
-            "error": bandit_result.get("error", "Unknown error"),
-            "total_issues": 0,
-            "severity_breakdown": {"LOW": 0, "MEDIUM": 0, "HIGH": 0},
+    """Normalize SSL certificate check results"""            severity = "low"
+
+    if not ssl_data:        
+
+        return {"valid": False, "issues": ["SSL check failed"], "summary": "SSL certificate validation failed"}        severity_counts[severity] += 1
+
+            
+
+    if not ssl_data.get("valid", False):        vulnerable_packages.append({
+
+        return {            "package": vuln.get("package_name", ""),
+
+            "valid": False,            "severity": severity,
+
+            "error": ssl_data.get("error", "Unknown SSL error"),            "installed_version": vuln.get("installed_version", ""),
+
+            "issues": [f"SSL connection failed: {ssl_data.get('error', 'Unknown error')}"],            "vulnerable_spec": vuln.get("vulnerable_spec", ""),
+
+            "summary": "SSL certificate validation failed"            "advisory": vuln.get("advisory", ""),
+
+        }            "vulnerability_id": vuln.get("vulnerability_id", "")
+
+            })
+
+    issues = []    
+
+        total_vulns = len(vulnerabilities)
+
+    # Check certificate expiry    
+
+    not_after = ssl_data.get("not_after")    # Generate recommendations
+
+    if not_after:    recommendations = []
+
+        from datetime import datetime    if total_vulns > 0:
+
+        try:        recommendations.append("Update vulnerable Python packages to secure versions")
+
+            # Parse the certificate date format        recommendations.append("Pin package versions in requirements.txt")
+
+            exp_date = datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")        recommendations.append("Consider using virtual environments for isolation")
+
+            days_until_expiry = (exp_date - datetime.now()).days        if severity_counts["high"] > 0:
+
+                        recommendations.append("Prioritize fixing high-severity Python vulnerabilities")
+
+            if days_until_expiry < 30:    
+
+                issues.append(f"Certificate expires in {days_until_expiry} days")    return {
+
+            elif days_until_expiry < 0:        "scanner": "safety",
+
+                issues.append("Certificate has expired")        "success": True,
+
+        except:        "total_vulns": total_vulns,
+
+            issues.append("Could not parse certificate expiry date")        "severity_breakdown": severity_counts,
+
+            "vulnerable_packages": vulnerable_packages,
+
+    # Check subject        "recommendations": recommendations,
+
+    subject = ssl_data.get("subject", {})        "scan_summary": f"Found {total_vulns} vulnerabilities in Python dependencies"
+
+    hostname = ssl_data.get("hostname", "")    }
+
+    if subject.get("commonName") != hostname:
+
+        issues.append(f"Certificate CN '{subject.get('commonName')}' doesn't match hostname '{hostname}'")
+
+    def summarize_bandit(bandit_result: Dict[str, Any]) -> Dict[str, Any]:
+
+    return {    """Normalize bandit scan results into standard format"""
+
+        "valid": ssl_data.get("valid", False),    
+
+        "hostname": hostname,    if not bandit_result.get("success", False):
+
+        "subject": subject,        return {
+
+        "issuer": ssl_data.get("issuer", {}),            "scanner": "bandit",
+
+        "not_after": not_after,            "success": False,
+
+        "issues": issues,            "error": bandit_result.get("error", "Unknown error"),
+
+        "summary": f"SSL certificate {'valid' if len(issues) == 0 else 'has issues'}: {', '.join(issues) if issues else 'No issues found'}"            "total_issues": 0,
+
+    }            "severity_breakdown": {"LOW": 0, "MEDIUM": 0, "HIGH": 0},
+
             "recommendations": []
-        }
-    
-    issues = bandit_result.get("issues", [])
-    counts = bandit_result.get("counts", {"LOW": 0, "MEDIUM": 0, "HIGH": 0})
-    
-    # Process issues by category
-    issue_categories = {}
-    code_issues = []
-    
-    for issue in issues:
-        test_id = issue.get("test_id", "")
-        test_name = issue.get("test_name", "")
-        severity = issue.get("issue_severity", "LOW")
-        confidence = issue.get("issue_confidence", "LOW")
+
+def summarize_custom_checks(custom_data: Dict[str, Any]) -> Dict[str, Any]:        }
+
+    """Normalize custom security check results"""    
+
+    if not custom_data:    issues = bandit_result.get("issues", [])
+
+        return {"total_issues": 0, "categories": {}, "summary": "No custom security issues found"}    counts = bandit_result.get("counts", {"LOW": 0, "MEDIUM": 0, "HIGH": 0})
+
         
-        category = issue_categories.get(test_name, {
-            "test_name": test_name,
-            "test_id": test_id,
-            "count": 0,
-            "max_severity": "LOW"
-        })
-        
+
+    total_issues = 0    # Process issues by category
+
+    categories = {}    issue_categories = {}
+
+        code_issues = []
+
+    for category, data in custom_data.items():    
+
+        if isinstance(data, dict) and "total" in data:    for issue in issues:
+
+            issue_count = data["total"]        test_id = issue.get("test_id", "")
+
+            total_issues += issue_count        test_name = issue.get("test_name", "")
+
+            categories[category] = {        severity = issue.get("issue_severity", "LOW")
+
+                "count": issue_count,        confidence = issue.get("issue_confidence", "LOW")
+
+                "issues": data.get("issues", [])[:5]  # Limit to top 5 per category        
+
+            }        category = issue_categories.get(test_name, {
+
+                "test_name": test_name,
+
+    return {            "test_id": test_id,
+
+        "total_issues": total_issues,            "count": 0,
+
+        "categories": categories,            "max_severity": "LOW"
+
+        "summary": f"Found {total_issues} custom security issues across {len(categories)} categories"        })
+
+    }        
         category["count"] += 1
         if severity == "HIGH" or category["max_severity"] != "HIGH":
             if severity == "MEDIUM" and category["max_severity"] == "LOW":

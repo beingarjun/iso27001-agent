@@ -1,507 +1,858 @@
-"""
-FastAPI application for ISO 27001 Agent with SSE and human-in-the-loop workflow
-"""
-import asyncio
-import json
-from datetime import datetime
-from typing import List, Dict, Any, Optional
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import select, Session
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
+from sqlmodel import Session, select
+from typing import Dict, List, Optional, Any
+from datetime import datetime, timedelta
+import uuid
+import json
+import asyncio
+from pathlib import Path
+import io
+import csv
 
-from .deps import init_db, get_session, get_settings, Settings
-from .models import (
-    ScanRun, Finding, AuditLog,
-    ScanRequest, ScanResponse, FindingUpdate,
-    ApprovalStatus, ScanStatus
-)
-from .agents.graph import app_graph
-from .agents.lcel_pipeline import (
-    stream_compliance_analysis,
-    stream_finding_explanation, 
-    stream_remediation_guidance
-)
+from .models import *
+from .deps import get_db, get_settings, get_current_user
+from .agents.compliance_workflow import create_compliance_agent
+from .agents.tools.security_scanners import create_security_scanner, create_ai_bias_scanner
+from .agents.tools.evidence_manager import create_evidence_manager
+from .reporting.report_generator import create_report_generator
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan events"""
-    # Startup
-    init_db()
-    yield
-    # Shutdown - add cleanup if needed
-
+settings = get_settings()
 
 # Create FastAPI app
 app = FastAPI(
-    title="ISO 27001 Agent",
-    description="AI-powered ISO 27001 compliance agent with human-in-the-loop approval workflow",
+    title="ISO 27001 Compliance Agent",
+    description="Enterprise-grade GRC platform with AI governance (ISO 27001 + ISO 42001)",
     version="1.0.0",
-    lifespan=lifespan
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Configure CORS
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# OAuth2 scheme
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"{settings.oauth_base_url}/auth",
+    tokenUrl=f"{settings.oauth_base_url}/token",
+    scopes={"read": "Read access", "write": "Write access", "admin": "Admin access"}
+)
 
-def log_audit_event(
-    session: Session,
-    user_email: str,
-    action: str,
-    resource_type: str,
-    resource_id: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None
-):
-    """Log audit event for compliance tracking"""
-    audit_log = AuditLog(
-        user_email=user_email,
-        action=action,
-        resource_type=resource_type,
-        resource_id=resource_id,
-        details=json.dumps(details) if details else None
-    )
-    session.add(audit_log)
-    session.commit()
+# Initialize services
+compliance_agent = create_compliance_agent()
+security_scanner = create_security_scanner()
+ai_bias_scanner = create_ai_bias_scanner()
+evidence_manager = create_evidence_manager()
+report_generator = create_report_generator()
 
-
-@app.get("/")
-async def root():
+# Health check endpoint
+@app.get("/health")
+async def health_check():
     """Health check endpoint"""
     return {
-        "message": "ISO 27001 Agent API",
-        "version": "1.0.0",
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0",
+        "services": {
+            "database": "connected",
+            "compliance_agent": "ready",
+            "security_scanner": "ready",
+            "report_generator": "ready"
+        }
     }
 
-
-@app.post("/scan/start", response_model=ScanResponse)
-async def start_scan(
-    request: ScanRequest,
-    background_tasks: BackgroundTasks,
-    session: Session = Depends(get_session),
-    settings: Settings = Depends(get_settings)
-):
-    """Start a new security scan"""
-    
-    # Create scan run record
-    scan_run = ScanRun(
-        host=request.host,
-        status="RUNNING",
-        initiated_by=request.initiated_by,
-        scan_config=json.dumps(request.scan_types) if request.scan_types else None
-    )
-    session.add(scan_run)
-    session.commit()
-    session.refresh(scan_run)
-    
-    # Log audit event
-    log_audit_event(
-        session, 
-        request.initiated_by or "system",
-        "START_SCAN",
-        "scan_run",
-        str(scan_run.id),
-        {"host": request.host}
-    )
-    
-    # Start background scan
-    background_tasks.add_task(execute_scan_workflow, scan_run.id, request.host)
-    
-    return ScanResponse(
-        run_id=scan_run.id,
-        status="RUNNING",
-        requires_approval=False,
-        message="Scan started successfully"
-    )
-
-
-async def execute_scan_workflow(run_id: int, host: str):
-    """Execute the LangGraph workflow in background"""
-    
+# Authentication endpoints
+@app.post("/auth/login")
+async def login(credentials: Dict[str, str], db: Session = Depends(get_db)):
+    """User login endpoint"""
     try:
-        # Initialize workflow state
-        initial_state = {
-            "host": host,
-            "run_id": run_id,
-            "scan_config": {
-                "npm_audit": True,
-                "safety_check": True,
-                "bandit_scan": True,
-                "ssl_check": True,
-                "http_headers": True,
-                "port_scan": False
+        # In production, integrate with OAuth2/OIDC provider
+        email = credentials.get("email")
+        password = credentials.get("password")
+        
+        if not email or not password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email and password required"
+            )
+        
+        # Mock authentication - replace with real OAuth2/OIDC
+        user = db.exec(select(User).where(User.email == email)).first()
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+        
+        # Generate mock JWT token - replace with real token generation
+        access_token = f"mock_token_{uuid.uuid4().hex}"
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+                "org_id": user.org_id
             }
         }
         
-        # Run the workflow
-        final_state = app_graph.invoke(initial_state)
-        
-        # Update scan run with results
-        with next(get_session()) as session:
-            scan_run = session.get(ScanRun, run_id)
-            if scan_run:
-                findings = final_state.get("findings", [])
-                high_severity_count = sum(
-                    1 for f in findings if f.get("severity") in ["HIGH", "CRITICAL"]
-                )
-                
-                # Create finding records
-                for finding_data in findings:
-                    finding = Finding(
-                        control=finding_data["control"],
-                        severity=finding_data["severity"],
-                        title=finding_data["title"],
-                        detail=finding_data["detail"],
-                        host=host,
-                        scan_run_id=run_id,
-                        evidence=finding_data.get("evidence"),
-                        remediation=finding_data.get("remediation"),
-                        control_family=finding_data.get("control_family")
-                    )
-                    session.add(finding)
-                
-                # Update scan run status
-                scan_run.findings_count = len(findings)
-                scan_run.high_severity_count = high_severity_count
-                scan_run.graph_state = json.dumps(final_state)
-                
-                if final_state.get("requires_approval", False):
-                    scan_run.status = "WAITING_APPROVAL"
-                else:
-                    scan_run.status = "DONE"
-                    scan_run.finished_at = datetime.utcnow()
-                
-                session.add(scan_run)
-                session.commit()
-    
     except Exception as e:
-        # Update scan run with error
-        with next(get_session()) as session:
-            scan_run = session.get(ScanRun, run_id)
-            if scan_run:
-                scan_run.status = "FAILED"
-                scan_run.error_message = str(e)
-                scan_run.finished_at = datetime.utcnow()
-                session.add(scan_run)
-                session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
+        )
 
-
-@app.get("/scans", response_model=List[ScanRun])
-async def list_scans(
-    host: Optional[str] = None,
-    limit: int = 50,
-    session: Session = Depends(get_session)
+# Organization management
+@app.get("/api/organizations/{org_id}")
+async def get_organization(
+    org_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """List scan runs"""
+    """Get organization details"""
+    if current_user.org_id != org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
     
-    query = select(ScanRun)
-    if host:
-        query = query.where(ScanRun.host == host)
+    org = db.exec(select(Organization).where(Organization.id == org_id)).first()
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
     
-    query = query.order_by(ScanRun.started_at.desc()).limit(limit)
-    scans = session.exec(query).all()
-    return scans
+    return org
 
-
-@app.get("/scans/{run_id}")
-async def get_scan(run_id: int, session: Session = Depends(get_session)):
-    """Get specific scan details"""
+@app.put("/api/organizations/{org_id}")
+async def update_organization(
+    org_id: int,
+    org_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update organization settings"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Access denied")
     
-    scan_run = session.get(ScanRun, run_id)
-    if not scan_run:
-        raise HTTPException(status_code=404, detail="Scan run not found")
+    org = db.exec(select(Organization).where(Organization.id == org_id)).first()
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
     
-    return scan_run
+    # Update allowed fields
+    for field, value in org_data.items():
+        if hasattr(org, field) and field not in ['id', 'created_at']:
+            setattr(org, field, value)
+    
+    db.add(org)
+    db.commit()
+    db.refresh(org)
+    
+    return org
 
+# Compliance workflow endpoints
+@app.post("/api/compliance/scan")
+async def trigger_compliance_scan(
+    scan_request: Dict[str, Any],
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Trigger comprehensive compliance scan"""
+    
+    org_id = current_user.org_id
+    scan_types = scan_request.get("scan_types", ["sast", "dependency", "secrets", "iac"])
+    target_path = scan_request.get("target_path", "/app")
+    
+    # Start scan in background
+    scan_id = f"SCAN-{uuid.uuid4().hex[:8].upper()}"
+    
+    background_tasks.add_task(
+        run_compliance_scan_background,
+        scan_id=scan_id,
+        org_id=org_id,
+        user_id=str(current_user.id),
+        target_path=target_path,
+        scan_types=scan_types
+    )
+    
+    return {
+        "scan_id": scan_id,
+        "status": "started",
+        "org_id": org_id,
+        "scan_types": scan_types,
+        "estimated_duration": "5-10 minutes"
+    }
 
-@app.get("/findings", response_model=List[Finding])
+async def run_compliance_scan_background(
+    scan_id: str,
+    org_id: int,
+    user_id: str,
+    target_path: str,
+    scan_types: List[str]
+):
+    """Background task for running compliance scan"""
+    try:
+        # Run security scan
+        scan_results = await security_scanner.run_comprehensive_scan(
+            org_id=org_id,
+            target_path=target_path,
+            scan_types=scan_types
+        )
+        
+        # Run AI bias assessment if AI models exist
+        # This would check for AI models in the org and test them
+        
+        # Run compliance workflow
+        workflow_result = await compliance_agent.run_compliance_workflow(
+            org_id=org_id,
+            user_id=user_id,
+            workflow_type="security_scan",
+            initial_message=f"Process security scan results for scan {scan_id}",
+            context={
+                "scan_id": scan_id,
+                "scan_results": scan_results,
+                "target_path": target_path
+            }
+        )
+        
+        # Store results in database (implementation depends on your storage strategy)
+        
+    except Exception as e:
+        print(f"Error in background scan {scan_id}: {str(e)}")
+
+@app.get("/api/compliance/scans/{scan_id}")
+async def get_scan_status(
+    scan_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get scan status and results"""
+    
+    # Mock response - replace with actual scan status lookup
+    return {
+        "scan_id": scan_id,
+        "status": "completed",
+        "org_id": current_user.org_id,
+        "findings_count": 12,
+        "high_severity_count": 3,
+        "evidence_packages": 12,
+        "approval_required": True,
+        "completion_time": datetime.utcnow().isoformat()
+    }
+
+# Finding management
+@app.get("/api/findings")
 async def list_findings(
-    host: Optional[str] = None,
-    status: Optional[ApprovalStatus] = None,
-    severity: Optional[str] = None,
+    org_id: int = None,
+    severity: str = None,
+    status: str = None,
     limit: int = 100,
-    session: Session = Depends(get_session)
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """List findings with optional filters"""
+    """List findings with filters"""
+    
+    if org_id and current_user.org_id != org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
     
     query = select(Finding)
     
-    if host:
-        query = query.where(Finding.host == host)
-    if status:
-        query = query.where(Finding.approval_status == status)
+    if org_id:
+        query = query.where(Finding.org_id == org_id)
+    elif current_user.role != UserRole.ADMIN:
+        query = query.where(Finding.org_id == current_user.org_id)
+    
     if severity:
         query = query.where(Finding.severity == severity)
     
-    query = query.order_by(Finding.created_at.desc()).limit(limit)
-    findings = session.exec(query).all()
-    return findings
-
-
-@app.get("/findings/{finding_id}")
-async def get_finding(finding_id: int, session: Session = Depends(get_session)):
-    """Get specific finding details"""
+    if status:
+        query = query.where(Finding.status == status)
     
-    finding = session.get(Finding, finding_id)
+    query = query.offset(offset).limit(limit)
+    
+    findings = db.exec(query).all()
+    
+    return {
+        "findings": findings,
+        "total": len(findings),
+        "limit": limit,
+        "offset": offset
+    }
+
+@app.get("/api/findings/{finding_id}")
+async def get_finding(
+    finding_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get finding details"""
+    
+    finding = db.exec(select(Finding).where(Finding.id == finding_id)).first()
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
+    
+    if finding.org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
     
     return finding
 
-
-@app.post("/findings/{finding_id}/approve")
+@app.post("/api/findings/{finding_id}/approve")
 async def approve_finding(
     finding_id: int,
-    update: FindingUpdate,
-    session: Session = Depends(get_session)
+    approval_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Approve a finding"""
+    """Approve or reject finding"""
     
-    finding = session.get(Finding, finding_id)
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    finding = db.exec(select(Finding).where(Finding.id == finding_id)).first()
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
     
-    finding.approval_status = "APPROVED"
-    finding.approval_reason = update.approval_reason
-    finding.approved_by = update.approved_by
-    finding.approved_at = datetime.utcnow()
+    approval_status = approval_data.get("status")  # "APPROVED" or "REJECTED"
+    approval_reason = approval_data.get("reason", "")
     
-    session.add(finding)
-    session.commit()
+    finding.approval_status = ApprovalStatus(approval_status)
+    finding.approval_reason = approval_reason
+    finding.approved_by = current_user.email
+    finding.approval_date = datetime.utcnow()
     
-    # Log audit event
-    log_audit_event(
-        session,
-        update.approved_by,
-        "APPROVE_FINDING",
-        "finding",
-        str(finding_id),
-        {"reason": update.approval_reason}
+    # Set expiry for approvals (time-boxed)
+    if approval_status == "APPROVED":
+        finding.approval_expiry = datetime.utcnow() + timedelta(days=90)
+    
+    db.add(finding)
+    db.commit()
+    db.refresh(finding)
+    
+    return finding
+
+# Risk management
+@app.get("/api/risks")
+async def list_risks(
+    org_id: int = None,
+    status: str = None,
+    category: str = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """List risks with filters"""
+    
+    if org_id and current_user.org_id != org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = select(RiskRegister)
+    
+    if org_id:
+        query = query.where(RiskRegister.org_id == org_id)
+    elif current_user.role != UserRole.ADMIN:
+        query = query.where(RiskRegister.org_id == current_user.org_id)
+    
+    if status:
+        query = query.where(RiskRegister.status == status)
+    
+    if category:
+        query = query.where(RiskRegister.category == category)
+    
+    query = query.offset(offset).limit(limit)
+    
+    risks = db.exec(query).all()
+    
+    return {
+        "risks": risks,
+        "total": len(risks),
+        "limit": limit,
+        "offset": offset
+    }
+
+@app.post("/api/risks")
+async def create_risk(
+    risk_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create new risk"""
+    
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Calculate risk scores
+    inherent_likelihood = risk_data.get("inherent_likelihood", 3)
+    inherent_impact = risk_data.get("inherent_impact", 3)
+    residual_likelihood = risk_data.get("residual_likelihood", inherent_likelihood)
+    residual_impact = risk_data.get("residual_impact", inherent_impact)
+    
+    risk = RiskRegister(
+        org_id=current_user.org_id,
+        title=risk_data["title"],
+        description=risk_data["description"],
+        category=risk_data.get("category", "Operational"),
+        inherent_likelihood=inherent_likelihood,
+        inherent_impact=inherent_impact,
+        inherent_risk_score=inherent_likelihood * inherent_impact,
+        residual_likelihood=residual_likelihood,
+        residual_impact=residual_impact,
+        residual_risk_score=residual_likelihood * residual_impact,
+        owner_id=current_user.id,
+        created_by=current_user.email
     )
     
-    return {"message": "Finding approved successfully"}
+    # Check if exceeds risk appetite
+    org = db.exec(select(Organization).where(Organization.id == current_user.org_id)).first()
+    if org:
+        risk.exceeds_appetite = risk.residual_risk_score > org.risk_appetite_score
+    
+    db.add(risk)
+    db.commit()
+    db.refresh(risk)
+    
+    return risk
 
-
-@app.post("/findings/{finding_id}/reject")
-async def reject_finding(
-    finding_id: int,
-    update: FindingUpdate,
-    session: Session = Depends(get_session)
+@app.post("/api/risks/{risk_id}/accept")
+async def accept_risk(
+    risk_id: int,
+    acceptance_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Reject a finding"""
+    """Accept risk with time-boxed approval"""
     
-    finding = session.get(Finding, finding_id)
-    if not finding:
-        raise HTTPException(status_code=404, detail="Finding not found")
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    finding.approval_status = "REJECTED"
-    finding.approval_reason = update.approval_reason
-    finding.approved_by = update.approved_by
-    finding.approved_at = datetime.utcnow()
+    risk = db.exec(select(RiskRegister).where(RiskRegister.id == risk_id)).first()
+    if not risk:
+        raise HTTPException(status_code=404, detail="Risk not found")
     
-    session.add(finding)
-    session.commit()
+    # Risk acceptance with time-boxing
+    risk.status = RiskStatus.ACCEPTED
+    risk.risk_acceptance_approver = current_user.email
+    risk.risk_acceptance_reason = acceptance_data.get("reason", "")
+    risk.risk_acceptance_conditions = json.dumps(acceptance_data.get("conditions", []))
+    risk.acceptance_signed = True
+    risk.acceptance_signature_hash = f"signature_{uuid.uuid4().hex}"
     
-    # Log audit event
-    log_audit_event(
-        session,
-        update.approved_by,
-        "REJECT_FINDING", 
-        "finding",
-        str(finding_id),
-        {"reason": update.approval_reason}
+    # Set expiry (max 12 months for high risks)
+    max_months = 6 if risk.residual_risk_score > 15 else 12
+    risk.risk_acceptance_expiry = datetime.utcnow() + timedelta(days=30 * max_months)
+    risk.acceptance_review_date = datetime.utcnow() + timedelta(days=90)
+    
+    db.add(risk)
+    db.commit()
+    db.refresh(risk)
+    
+    return risk
+
+# Reports and deliverables
+@app.post("/api/reports/statement-of-applicability")
+async def generate_soa_report(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate Statement of Applicability"""
+    
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    # Get controls data
+    controls = db.exec(select(ControlImplementation).where(
+        ControlImplementation.org_id == current_user.org_id
+    )).all()
+    
+    # Get org info
+    org = db.exec(select(Organization).where(Organization.id == current_user.org_id)).first()
+    
+    controls_data = [
+        {
+            "control_id": control.control_id,
+            "control_title": control.control_title,
+            "control_description": control.control_description,
+            "status": control.status,
+            "implementation_status": control.implementation_status,
+            "owner": control.owner_id,
+            "implementation_approach": control.implementation_approach,
+            "evidence_location": control.evidence_location,
+            "testing_frequency": control.testing_frequency,
+            "exclusion_reason": control.exclusion_reason,
+            "not_applicable_reason": control.not_applicable_reason
+        }
+        for control in controls
+    ]
+    
+    org_info = {
+        "name": org.name if org else "Unknown Organization",
+        "scope_definition": org.scope_definition if org else "To be defined"
+    }
+    
+    result = await report_generator.generate_statement_of_applicability(
+        org_id=current_user.org_id,
+        controls_data=controls_data,
+        org_info=org_info
     )
     
-    return {"message": "Finding rejected successfully"}
+    return result
 
-
-@app.post("/scans/{run_id}/continue")
-async def continue_scan_after_approvals(
-    run_id: int,
-    background_tasks: BackgroundTasks,
-    session: Session = Depends(get_session)
+@app.post("/api/reports/risk-register")
+async def generate_risk_register_report(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Continue scan workflow after human approvals"""
+    """Generate Risk Register"""
     
-    scan_run = session.get(ScanRun, run_id)
-    if not scan_run:
-        raise HTTPException(status_code=404, detail="Scan run not found")
+    if current_user.role not in [UserRole.ADMIN, UserRole.COMPLIANCE_MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    # Check if there are still pending approvals
-    pending_count = session.exec(
-        select(Finding).where(
-            Finding.host == scan_run.host,
-            Finding.approval_status == "PENDING",
-            Finding.severity.in_(["HIGH", "CRITICAL"])
+    # Get risks data
+    risks = db.exec(select(RiskRegister).where(
+        RiskRegister.org_id == current_user.org_id
+    )).all()
+    
+    risks_data = [
+        {
+            "risk_id": risk.risk_id,
+            "title": risk.title,
+            "category": risk.category,
+            "description": risk.description,
+            "owner": risk.owner_id,
+            "inherent_likelihood": risk.inherent_likelihood,
+            "inherent_impact": risk.inherent_impact,
+            "inherent_risk_score": risk.inherent_risk_score,
+            "residual_likelihood": risk.residual_likelihood,
+            "residual_impact": risk.residual_impact,
+            "residual_risk_score": risk.residual_risk_score,
+            "status": risk.status,
+            "mitigation_actions": [],  # Would be populated from related CAPAs
+            "target_closure_date": risk.target_closure_date,
+            "last_reviewed": risk.last_reviewed,
+            "exceeds_appetite": risk.exceeds_appetite
+        }
+        for risk in risks
+    ]
+    
+    org = db.exec(select(Organization).where(Organization.id == current_user.org_id)).first()
+    org_info = {
+        "name": org.name if org else "Unknown Organization"
+    }
+    
+    result = await report_generator.generate_risk_register(
+        org_id=current_user.org_id,
+        risks_data=risks_data,
+        org_info=org_info
+    )
+    
+    return result
+
+@app.get("/api/reports/{report_id}/download")
+async def download_report(
+    report_id: str,
+    format: str = "pdf",
+    current_user: User = Depends(get_current_user)
+):
+    """Download generated report"""
+    
+    # Find report file
+    reports_dir = Path("reports")
+    report_file = None
+    
+    # Search in different subdirectories
+    for subdir in ["statements", "risk_registers", "model_cards", "management_reviews", "release_reports"]:
+        file_path = reports_dir / subdir / f"{report_id}.{format}"
+        if file_path.exists():
+            report_file = file_path
+            break
+    
+    if not report_file:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    return FileResponse(
+        path=report_file,
+        filename=f"{report_id}.{format}",
+        media_type="application/octet-stream"
+    )
+
+# =============================================================================
+# EVIDENCE MANAGEMENT ENDPOINTS
+# =============================================================================
+
+@app.post("/evidence/store")
+async def store_evidence(
+    title: str,
+    description: str,
+    evidence_type: str,
+    file_content: bytes,
+    file_name: str,
+    mime_type: str,
+    finding_id: Optional[int] = None,
+    control_id: Optional[str] = None,
+    audit_period: Optional[str] = None,
+    is_sensitive: bool = False,
+    authorized_roles: Optional[List[str]] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Store evidence with immutable storage and chain of custody"""
+    try:
+        # Store evidence in vault
+        result = evidence_manager.store_evidence(
+            title=title,
+            description=description,
+            evidence_type=evidence_type,
+            file_content=file_content,
+            file_name=file_name,
+            mime_type=mime_type,
+            org_id=current_user.org_id,
+            collected_by=current_user.email,
+            finding_id=finding_id,
+            control_id=control_id,
+            audit_period=audit_period,
+            is_sensitive=is_sensitive,
+            authorized_roles=authorized_roles
         )
-    ).all()
-    
-    if len(pending_count) > 0:
+        
+        # Create database record
+        evidence_record = Evidence(
+            evidence_id=result["evidence_id"],
+            title=title,
+            description=description,
+            evidence_type=evidence_type,
+            file_name=file_name,
+            file_size=result["file_size"],
+            mime_type=mime_type,
+            content_hash=result["content_hash"],
+            vault_path=result["vault_path"],
+            org_id=current_user.org_id,
+            collected_by=current_user.email,
+            finding_id=finding_id,
+            control_id=control_id,
+            audit_period=audit_period,
+            is_sensitive=is_sensitive,
+            authorized_roles=json.dumps(authorized_roles) if authorized_roles else None
+        )
+        
+        db.add(evidence_record)
+        db.commit()
+        db.refresh(evidence_record)
+        
         return {
-            "message": f"Still {len(pending_count)} pending approvals",
-            "status": "WAITING_APPROVAL"
+            "evidence_id": result["evidence_id"],
+            "content_hash": result["content_hash"],
+            "stored_at": result["stored_at"],
+            "database_id": evidence_record.id
         }
-    
-    # Continue workflow
-    background_tasks.add_task(continue_workflow, run_id)
-    
-    return {"message": "Continuing scan workflow", "status": "PROCESSING"}
-
-
-async def continue_workflow(run_id: int):
-    """Continue the workflow after approvals"""
-    
-    with next(get_session()) as session:
-        scan_run = session.get(ScanRun, run_id)
-        if not scan_run:
-            return
         
-        try:
-            # Parse previous state
-            previous_state = json.loads(scan_run.graph_state or "{}")
-            
-            # Re-invoke workflow from human_gate node
-            final_state = app_graph.invoke(previous_state)
-            
-            # Update scan run
-            scan_run.status = "DONE"
-            scan_run.finished_at = datetime.utcnow()
-            scan_run.graph_state = json.dumps(final_state)
-            
-            # Save report if generated
-            if final_state.get("report_md"):
-                report_path = f"./reports/scan_{run_id}_report.md"
-                with open(report_path, "w") as f:
-                    f.write(final_state["report_md"])
-                scan_run.report_path = report_path
-            
-            session.add(scan_run)
-            session.commit()
-            
-        except Exception as e:
-            scan_run.status = "FAILED"
-            scan_run.error_message = str(e)
-            scan_run.finished_at = datetime.utcnow()
-            session.add(scan_run)
-            session.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Evidence storage failed: {str(e)}")
 
-
-# Streaming endpoints for real-time analysis
-@app.get("/stream/compliance")
-async def stream_compliance_analysis_endpoint(
-    host: str,
-    run_id: Optional[int] = None
+@app.get("/evidence/{evidence_id}")
+async def retrieve_evidence(
+    evidence_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """Stream compliance analysis using LCEL pipeline"""
-    
-    async def event_generator():
-        try:
-            # Get scan data
-            scan_data = {"host": host}
-            
-            if run_id:
-                with next(get_session()) as session:
-                    scan_run = session.get(ScanRun, run_id)
-                    if scan_run and scan_run.graph_state:
-                        state = json.loads(scan_run.graph_state)
-                        scan_data.update(state)
-            
-            # Stream analysis
-            async for chunk in stream_compliance_analysis(scan_data):
-                if chunk:
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+    """Retrieve evidence with access control"""
+    try:
+        # Check database record exists
+        evidence_record = db.exec(
+            select(Evidence).where(Evidence.evidence_id == evidence_id)
+        ).first()
         
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-        }
-    )
+        if not evidence_record:
+            raise HTTPException(status_code=404, detail="Evidence not found")
+        
+        # Check organization access
+        if evidence_record.org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Retrieve from vault
+        file_content, metadata = evidence_manager.retrieve_evidence(
+            evidence_id=evidence_id,
+            requesting_user=current_user.email,
+            user_roles=[current_user.role.value]
+        )
+        
+        return StreamingResponse(
+            io.BytesIO(file_content),
+            media_type=evidence_record.mime_type,
+            headers={"Content-Disposition": f"attachment; filename={evidence_record.file_name}"}
+        )
+        
+    except Exception as e:
+        if "Access denied" in str(e):
+            raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Evidence retrieval failed: {str(e)}")
 
+@app.get("/evidence/{evidence_id}/metadata")
+async def get_evidence_metadata(
+    evidence_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get evidence metadata without downloading file"""
+    evidence_record = db.exec(
+        select(Evidence).where(Evidence.evidence_id == evidence_id)
+    ).first()
+    
+    if not evidence_record:
+        raise HTTPException(status_code=404, detail="Evidence not found")
+    
+    # Check organization access
+    if evidence_record.org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return {
+        "evidence_id": evidence_record.evidence_id,
+        "title": evidence_record.title,
+        "description": evidence_record.description,
+        "evidence_type": evidence_record.evidence_type,
+        "file_name": evidence_record.file_name,
+        "file_size": evidence_record.file_size,
+        "mime_type": evidence_record.mime_type,
+        "content_hash": evidence_record.content_hash,
+        "collected_by": evidence_record.collected_by,
+        "collection_date": evidence_record.collection_date,
+        "is_sensitive": evidence_record.is_sensitive,
+        "finding_id": evidence_record.finding_id,
+        "control_id": evidence_record.control_id,
+        "audit_period": evidence_record.audit_period
+    }
 
-@app.get("/stream/finding/{finding_id}")
-async def stream_finding_explanation_endpoint(finding_id: int, session: Session = Depends(get_session)):
-    """Stream detailed explanation of a specific finding"""
+@app.post("/evidence/verify-integrity")
+async def verify_evidence_integrity(
+    evidence_ids: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Verify integrity of evidence files"""
+    results = []
     
-    finding = session.get(Finding, finding_id)
-    if not finding:
-        raise HTTPException(status_code=404, detail="Finding not found")
+    for evidence_id in evidence_ids:
+        # Check database record
+        evidence_record = db.exec(
+            select(Evidence).where(Evidence.evidence_id == evidence_id)
+        ).first()
+        
+        if not evidence_record:
+            results.append({
+                "evidence_id": evidence_id,
+                "status": "NOT_FOUND_IN_DB",
+                "verified_at": datetime.utcnow().isoformat()
+            })
+            continue
+        
+        # Check organization access
+        if evidence_record.org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+            results.append({
+                "evidence_id": evidence_id,
+                "status": "ACCESS_DENIED",
+                "verified_at": datetime.utcnow().isoformat()
+            })
+            continue
+        
+        # Verify integrity
+        integrity_result = evidence_manager.verify_evidence_integrity(evidence_id)
+        results.append(integrity_result)
     
-    async def event_generator():
-        try:
-            finding_data = {
-                "control": finding.control,
-                "severity": finding.severity,
-                "title": finding.title,
-                "detail": finding.detail,
-                "evidence": finding.evidence or ""
+    return {
+        "verification_id": f"VERIFY-{uuid.uuid4().hex[:8].upper()}",
+        "verified_by": current_user.email,
+        "verified_at": datetime.utcnow().isoformat(),
+        "total_evidence": len(evidence_ids),
+        "results": results
+    }
+
+@app.get("/evidence/organization/{org_id}/list")
+async def list_organization_evidence(
+    org_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    evidence_type: Optional[str] = None,
+    audit_period: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List evidence for an organization"""
+    
+    # Check organization access
+    if org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Build query
+    query = select(Evidence).where(Evidence.org_id == org_id)
+    
+    if evidence_type:
+        query = query.where(Evidence.evidence_type == evidence_type)
+    
+    if audit_period:
+        query = query.where(Evidence.audit_period == audit_period)
+    
+    query = query.offset(skip).limit(limit).order_by(Evidence.collection_date.desc())
+    
+    evidence_list = db.exec(query).all()
+    
+    return {
+        "org_id": org_id,
+        "total_count": len(evidence_list),
+        "evidence": [
+            {
+                "evidence_id": e.evidence_id,
+                "title": e.title,
+                "evidence_type": e.evidence_type,
+                "file_name": e.file_name,
+                "file_size": e.file_size,
+                "collected_by": e.collected_by,
+                "collection_date": e.collection_date,
+                "finding_id": e.finding_id,
+                "control_id": e.control_id,
+                "audit_period": e.audit_period,
+                "is_sensitive": e.is_sensitive
             }
-            
-            async for chunk in stream_finding_explanation(finding_data):
-                if chunk:
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            for e in evidence_list
+        ]
+    }
+
+@app.post("/evidence/export")
+async def export_evidence_for_audit(
+    org_id: int,
+    audit_period: str,
+    export_format: str = "json",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Export evidence for audit purposes"""
+    
+    # Check organization access
+    if org_id != current_user.org_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        export_result = evidence_manager.export_evidence_for_audit(
+            org_id=org_id,
+            audit_period=audit_period,
+            export_format=export_format
+        )
         
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
+        return {
+            "export_id": export_result["export_id"],
+            "export_file": export_result["export_file"],
+            "evidence_count": export_result["evidence_count"],
+            "exported_at": export_result["exported_at"],
+            "exported_by": current_user.email
         }
-    )
-
-
-@app.get("/stream/remediation/{finding_id}")
-async def stream_remediation_guidance_endpoint(finding_id: int, session: Session = Depends(get_session)):
-    """Stream detailed remediation guidance for a finding"""
-    
-    finding = session.get(Finding, finding_id)
-    if not finding:
-        raise HTTPException(status_code=404, detail="Finding not found")
-    
-    async def event_generator():
-        try:
-            finding_data = {
-                "control": finding.control,
-                "title": finding.title,
-                "detail": finding.detail,
-                "evidence": finding.evidence or ""
-            }
-            
-            async for chunk in stream_remediation_guidance(finding_data):
-                if chunk:
-                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
         
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-        }
-    )
-
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Evidence export failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

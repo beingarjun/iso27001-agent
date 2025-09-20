@@ -1,12 +1,13 @@
 import './globals.css'
 import { Providers } from './providers'
+import { ReactNode } from 'react'
 
 export const metadata = {
   title: 'ISO 27001 Compliance Agent',
   description: 'Enterprise GRC platform with AI governance',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>

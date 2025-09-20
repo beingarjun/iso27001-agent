@@ -1,224 +1,444 @@
-# ISO 27001 Agent - Enterprise GRC Platform# ISO 27001 Agent 🛡️# ISO 27001 Agent 🛡️
+# ISO 27001 Compliance Agent# ISO 27001 Agent - Enterprise GRC Platform# ISO 27001 Agent 🛡️# ISO 27001 Agent 🛡️
 
 
 
-A comprehensive ISO 27001 compliance automation platform inspired by leading GRC solutions like Vanta, Drata, and Secureframe.
+Enterprise-grade GRC platform with AI governance, inspired by Vanta/Drata/Secureframe.
 
 
 
-## 🎯 MissionAn intelligent AI-powered agent for ISO 27001 compliance assessment, audit management, and security documentation.An intelligent AI-powered agent for ISO 27001 compliance assessment, audit management, and security documentation. Built with FastAPI, LangGraph, and Next.js.
-
-Automate ISO 27001 compliance for startups and enterprises with human-in-the-loop workflows, continuous monitoring, and audit-ready evidence collection.
+## 🎯 OverviewA comprehensive ISO 27001 compliance automation platform inspired by leading GRC solutions like Vanta, Drata, and Secureframe.
 
 
+
+Complete audit-ready compliance platform implementing:
+
+- **ISO 27001:2022** - Information Security Management
+
+- **ISO 42001** - AI Management System  ## 🎯 MissionAn intelligent AI-powered agent for ISO 27001 compliance assessment, audit management, and security documentation.An intelligent AI-powered agent for ISO 27001 compliance assessment, audit management, and security documentation. Built with FastAPI, LangGraph, and Next.js.
+
+- **SOC 2** - Service Organization Controls
+
+- **GDPR** - General Data Protection RegulationAutomate ISO 27001 compliance for startups and enterprises with human-in-the-loop workflows, continuous monitoring, and audit-ready evidence collection.
+
+- **DPDP-India** - Digital Personal Data Protection
+
+
+
+## ✨ Key Features
 
 ## 🏗️ Architecture
 
-## 🚀 Quick Start## ✨ Features
+### 🛡️ Enterprise Security Controls
 
-### Backend (FastAPI + LangGraph + LCEL)
+- **Immutable Evidence Vault** - Chain of custody with integrity verification## 🚀 Quick Start## ✨ Features
+
+- **Human-in-the-Loop Gates** - Approval workflows for HIGH/CRITICAL findings
+
+- **AI Bias Testing** - Comprehensive fairness metrics and model governance### Backend (FastAPI + LangGraph + LCEL)
+
+- **Multi-Framework Mapping** - Cross-compliance control relationships
 
 - **Multi-tenant**: Organization-based data isolation
 
-- **Compliance Engine**: LangGraph workflows with approval gates
+### 🔄 Automated Workflows  
 
-- **Evidence Collection**: Immutable storage with cryptographic hashing### Prerequisites- **AI-Powered Compliance Assessment**: Automated analysis of your organization's security posture
+- **LangGraph Workflows** - AI-powered compliance automation- **Compliance Engine**: LangGraph workflows with approval gates
+
+- **Security Scanning** - SAST, dependency, secrets, container, IaC
+
+- **CAPA Management** - Corrective Action Preventive Action tracking- **Evidence Collection**: Immutable storage with cryptographic hashing### Prerequisites- **AI-Powered Compliance Assessment**: Automated analysis of your organization's security posture
+
+- **Pipeline Security Gates** - Block releases on HIGH findings
 
 - **Risk Management**: Automated risk assessment with time-boxed acceptance
 
-- **Audit Trails**: Complete activity logging for compliance- Python 3.11+- **Multi-Tenant Architecture**: Company and project-based organization
+### 📊 Audit-Ready Deliverables
 
+- **Statement of Applicability** (SoA.md)- **Audit Trails**: Complete activity logging for compliance- Python 3.11+- **Multi-Tenant Architecture**: Company and project-based organization
 
+- **Risk Register** (CSV/JSON exports)
 
-### Frontend (Next.js + TypeScript)- Node.js 18+- **Google OAuth Integration**: Seamless authentication and user management
+- **AI Model Cards** (Google format)
 
-- **Compliance Dashboard**: Real-time compliance posture
+- **Management Review Reports** (PDF)
 
-- **Approval Workflows**: Human-in-the-loop decision making- Docker (optional)- **Real-time Processing**: Server-sent events for live audit progress
+- **Evidence Packages** (Immutable exports)### Frontend (Next.js + TypeScript)- Node.js 18+- **Google OAuth Integration**: Seamless authentication and user management
 
-- **Evidence Management**: Document and screenshot collection
 
-- **Risk Register**: Visual risk tracking and CAPA management- **Comprehensive Reporting**: Detailed compliance reports and findings
 
-- **Audit Preparation**: Export-ready compliance packages
+## 🏗️ Architecture- **Compliance Dashboard**: Real-time compliance posture
 
-### Development Setup- **Modular Agent System**: LangGraph workflows for complex compliance tasks
 
-## 🔒 Security Features
 
-- **Modern UI**: Clean, responsive interface built with Next.js and Tailwind CSS
+```- **Approval Workflows**: Human-in-the-loop decision making- Docker (optional)- **Real-time Processing**: Server-sent events for live audit progress
 
-### Continuous Monitoring
+├── backend/                 # FastAPI application
 
-- **Code Security**: Bandit, Safety, npm audit**Backend:**
+│   ├── models.py           # SQLModel entities- **Evidence Management**: Document and screenshot collection
 
-- **Infrastructure**: Cloud configuration scanning
+│   ├── app.py             # API endpoints + OAuth2/OIDC
 
-- **SSL/TLS**: Certificate monitoring and validation```bash## 🏗️ Architecture
+│   ├── deps.py            # Dependencies & settings- **Risk Register**: Visual risk tracking and CAPA management- **Comprehensive Reporting**: Detailed compliance reports and findings
 
-- **Access Control**: MFA enforcement tracking
+│   ├── agents/            # AI workflows
 
-- **Data Privacy**: GDPR/DPDP compliance mappingcd backend
+│   │   ├── compliance_workflow.py    # LangGraph automation- **Audit Preparation**: Export-ready compliance packages
 
+│   │   ├── capa_workflow.py         # CAPA management
 
+│   │   ├── framework_mapper.py      # Multi-framework mapping### Development Setup- **Modular Agent System**: LangGraph workflows for complex compliance tasks
 
-### Evidence Integritypython -m venv venv```
+│   │   ├── pipeline_integration.py  # CI/CD security gates
 
-- **Immutable Storage**: SHA-256 hashing for all evidence
+│   │   └── tools/         # Specialized tools## 🔒 Security Features
 
-- **Audit Trails**: Complete access and modification logssource venv/bin/activate  # Windows: venv\Scripts\activate├── backend/           # FastAPI backend with AI agents
+│   │       ├── security_scanners.py      # Unified scanning
 
-- **Version Control**: Document lifecycle management
+│   │       ├── evidence_manager.py       # Immutable vault- **Modern UI**: Clean, responsive interface built with Next.js and Tailwind CSS
 
-- **Retention Policies**: Automated evidence lifecyclepip install -r requirements.txt│   ├── agents/        # LangGraph workflows and LCEL pipelines
+│   │       └── evidence_collector.py     # Automated collection
 
+│   └── reporting/         # Report generation### Continuous Monitoring
 
+│       └── report_generator.py
 
-## 🏢 Enterprise Featuresuvicorn main:app --reload│   ├── reporting/     # Report generation and templates
+├── frontend/              # Next.js dashboard- **Code Security**: Bandit, Safety, npm audit**Backend:**
 
+│   ├── src/app/          # App router
 
+│   └── src/components/   # React components- **Infrastructure**: Cloud configuration scanning
 
-### Multi-Framework Support```│   └── auth.py        # Authentication and authorization
+└── evidence/             # Immutable evidence vault
 
-- ISO 27001:2022
+    ├── vault/            # Content-addressed storage- **SSL/TLS**: Certificate monitoring and validation```bash## 🏗️ Architecture
 
-- SOC 2 Type II├── frontend/          # Next.js frontend application
+    ├── metadata/         # Evidence metadata
 
-- GDPR/DPDP India
-
-- PCI DSS**Frontend:**│   ├── src/components # Reusable UI components
-
-- HIPAA
-
-```bash│   ├── src/pages/     # Application pages and routing
-
-### Business Continuity
-
-- **BC/DR Drills**: Automated testing with RTO/RPO metricscd frontend│   └── src/lib/       # Utilities and API client
-
-- **Incident Response**: Workflow automation
-
-- **Recovery Planning**: Evidence-based recovery proceduresnpm install└── .github/           # CI/CD workflows and automation
-
-
-
-### Governancenpm run dev```
-
-- **Management Reviews**: Quarterly business reviews with KPIs
-
-- **Internal Audits**: Structured audit planning and execution```
-
-- **Policy Management**: Version-controlled document library
-
-- **Training Tracking**: Compliance awareness programs## 🚀 Quick Start
-
-
-
-## 🚀 Quick Start### Access
-
-
-
-### Backend Setup- Frontend: http://localhost:3000### Prerequisites
-
-```bash
-
-cd backend- Backend API: http://localhost:8000
-
-pip install -r requirements.txt
-
-export OPENAI_API_KEY=your_key_here- API Docs: http://localhost:8000/docs- **Python 3.11+**
-
-uvicorn app:app --reload
-
-```- **Node.js 18+**
-
-
-
-### Frontend Setup## 🏗️ Architecture- **Docker & Docker Compose** (optional)
-
-```bash
-
-cd frontend- **OpenAI API Key**
-
-npm install
-
-npm run dev```- **Google OAuth Credentials** (optional)
+    └── exports/          # Audit packages- **Access Control**: MFA enforcement tracking
 
 ```
 
-iso27001-agent/
+- **Data Privacy**: GDPR/DPDP compliance mappingcd backend
 
-## 📊 Compliance Dashboard
+## 🚀 Quick Start
 
-├── backend/          # FastAPI + AI agents### 1. Clone the Repository
 
-### Real-time Metrics
+
+### Backend Setup
+
+```bash### Evidence Integritypython -m venv venv```
+
+cd backend
+
+pip install -r requirements.txt- **Immutable Storage**: SHA-256 hashing for all evidence
+
+uvicorn app:app --reload
+
+```- **Audit Trails**: Complete access and modification logssource venv/bin/activate  # Windows: venv\Scripts\activate├── backend/           # FastAPI backend with AI agents
+
+
+
+### Frontend Setup  - **Version Control**: Document lifecycle management
+
+```bash
+
+cd frontend- **Retention Policies**: Automated evidence lifecyclepip install -r requirements.txt│   ├── agents/        # LangGraph workflows and LCEL pipelines
+
+npm install
+
+npm run dev
+
+```
+
+## 🏢 Enterprise Featuresuvicorn main:app --reload│   ├── reporting/     # Report generation and templates
+
+### Environment Variables
+
+```bash
+
+# Backend (.env)
+
+DATABASE_URL=postgresql://user:pass@localhost/compliance### Multi-Framework Support```│   └── auth.py        # Authentication and authorization
+
+OAUTH_CLIENT_ID=your_oauth_client_id
+
+OAUTH_CLIENT_SECRET=your_oauth_client_secret- ISO 27001:2022
+
+
+
+# Frontend (.env.local)- SOC 2 Type II├── frontend/          # Next.js frontend application
+
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+```- GDPR/DPDP India
+
+
+
+## 🔧 Core Components- PCI DSS**Frontend:**│   ├── src/components # Reusable UI components
+
+
+
+### Authentication & Authorization- HIPAA
+
+- **OAuth2/OIDC** - Enterprise SSO integration
+
+- **RBAC** - Role-based access control with AI_GOVERNANCE_LEAD role```bash│   ├── src/pages/     # Application pages and routing
+
+- **Multi-tenant** - Organization-level data isolation
+
+### Business Continuity
+
+### Security Scanning Tools
+
+- **Bandit** - Python SAST scanning- **BC/DR Drills**: Automated testing with RTO/RPO metricscd frontend│   └── src/lib/       # Utilities and API client
+
+- **Safety** - Dependency vulnerability scanning  
+
+- **TruffleHog** - Secrets detection- **Incident Response**: Workflow automation
+
+- **Trivy** - Container security scanning
+
+- **Checkov** - Infrastructure as Code scanning- **Recovery Planning**: Evidence-based recovery proceduresnpm install└── .github/           # CI/CD workflows and automation
+
+
+
+### AI Governance (ISO 42001)
+
+- **Model Cards** - Comprehensive AI system documentation
+
+- **Bias Testing** - Automated fairness assessment### Governancenpm run dev```
+
+- **Risk Assessment** - AI-specific risk evaluation
+
+- **Governance Workflows** - Human oversight for AI decisions- **Management Reviews**: Quarterly business reviews with KPIs
+
+
+
+### Evidence Management- **Internal Audits**: Structured audit planning and execution```
+
+- **Content-Addressed Storage** - Deduplication by hash
+
+- **Chain of Custody** - Complete audit trail- **Policy Management**: Version-controlled document library
+
+- **Integrity Verification** - Tamper detection
+
+- **Access Control** - Role-based evidence access- **Training Tracking**: Compliance awareness programs## 🚀 Quick Start
+
+
+
+## 📋 API Endpoints
+
+
+
+### Core Operations## 🚀 Quick Start### Access
+
+- `GET /health` - Health check
+
+- `POST /auth/token` - OAuth authentication
+
+- `GET /organizations/{id}/compliance-status` - Compliance overview
+
+### Backend Setup- Frontend: http://localhost:3000### Prerequisites
+
+### Scanning & Security
+
+- `POST /scan/security` - Run security scans```bash
+
+- `GET /scan/{scan_id}/results` - Get scan results
+
+- `POST /scan/ai-bias` - AI bias testingcd backend- Backend API: http://localhost:8000
+
+
+
+### Evidence Management  pip install -r requirements.txt
+
+- `POST /evidence/store` - Store evidence
+
+- `GET /evidence/{evidence_id}` - Retrieve evidenceexport OPENAI_API_KEY=your_key_here- API Docs: http://localhost:8000/docs- **Python 3.11+**
+
+- `POST /evidence/verify-integrity` - Integrity verification
+
+uvicorn app:app --reload
+
+### Compliance Workflows
+
+- `POST /compliance/workflows/start` - Start compliance workflow```- **Node.js 18+**
+
+- `GET /compliance/findings` - List findings
+
+- `POST /compliance/findings/{id}/approve` - Approve findings
+
+
+
+### Reporting### Frontend Setup## 🏗️ Architecture- **Docker & Docker Compose** (optional)
+
+- `POST /reports/generate` - Generate compliance reports
+
+- `GET /reports/{report_id}/download` - Download reports```bash
+
+
+
+## 🔒 Security Featurescd frontend- **OpenAI API Key**
+
+
+
+### Pipeline Security Gatesnpm install
+
+```yaml
+
+# .github/workflows/security-gate.ymlnpm run dev```- **Google OAuth Credentials** (optional)
+
+- name: Security Scan
+
+  run: |```
+
+    bandit -r . -f json
+
+    safety check --json  iso27001-agent/
+
+    docker run trufflesecurity/trufflehog:latest filesystem .
+
+```## 📊 Compliance Dashboard
+
+
+
+### Evidence Integrity├── backend/          # FastAPI + AI agents### 1. Clone the Repository
+
+- **SHA-256 Hashing** - Content integrity verification
+
+- **Metadata Signing** - Tamper detection### Real-time Metrics
+
+- **Immutable Storage** - Write-once evidence vault
 
 - **Control Coverage**: % of ISO 27001 controls implemented├── frontend/         # Next.js + TypeScript
 
-- **Risk Posture**: Open/mitigated/accepted risks
+### Human Approval Gates
 
-- **CAPA Status**: Corrective actions tracking├── docker/           # Docker configurations```bash
+- **HIGH/CRITICAL Findings** - Mandatory human review- **Risk Posture**: Open/mitigated/accepted risks
 
-- **Evidence Health**: Collection and validation status
+- **Time-boxed Approvals** - Automatic escalation
 
-└── .github/          # CI/CD workflowsgit clone https://github.com/beingarjun/iso27001-agent.git
+- **Audit Trail** - Complete decision history- **CAPA Status**: Corrective actions tracking├── docker/           # Docker configurations```bash
 
-### Audit Readiness
+
+
+## 📊 Compliance Metrics- **Evidence Health**: Collection and validation status
+
+
+
+### ISO 27001 Implementation└── .github/          # CI/CD workflowsgit clone https://github.com/beingarjun/iso27001-agent.git
+
+- **114 Controls** - Complete Annex A coverage
+
+- **Risk Register** - Comprehensive risk assessment### Audit Readiness
+
+- **Statement of Applicability** - Control selection rationale
 
 - **SoA Export**: Statement of Applicability with rationales```cd iso27001-agent
 
-- **Risk Register**: Complete risk assessment documentation
+### AI Governance (ISO 42001)
 
-- **Evidence Package**: Immutable compliance artifacts```
+- **Model Inventory** - Complete AI system catalog- **Risk Register**: Complete risk assessment documentation
 
-- **Management Reviews**: Quarterly governance records
+- **Bias Metrics** - Demographic parity, equalized odds
 
-## ✨ Features
+- **Risk Assessment** - AI-specific risk evaluation- **Evidence Package**: Immutable compliance artifacts```
+
+
+
+### Cross-Framework Mapping- **Management Reviews**: Quarterly governance records
+
+- **Control Relationships** - ISO 27001 ↔ SOC 2 ↔ GDPR
+
+- **Gap Analysis** - Framework coverage assessment## ✨ Features
+
+- **Unified Reporting** - Multi-framework compliance view
 
 ## 🔐 Access Control
 
+## 🎯 Acceptance Criteria Status
+
 ### 2. Environment Setup
 
-### Role-Based Access
+✅ **A. Governance** - Multi-framework policy management  
 
-- **Admin**: Full system access and configuration- 🤖 AI-powered compliance assessment
+✅ **B. Risk Management** - Automated risk assessment with AI risks  ### Role-Based Access
 
-- **Compliance Manager**: Risk and control management
+✅ **C. Asset Management** - Complete inventory with AI systems  
 
-- **Auditor**: Read-only evidence and report access- 🏢 Multi-tenant company managementCopy the environment files and configure your settings:
+✅ **D. Access Control** - RBAC with AI governance roles  - **Admin**: Full system access and configuration- 🤖 AI-powered compliance assessment
 
-- **Viewer**: Dashboard and basic reporting
+✅ **E. Cryptography** - Evidence integrity with SHA-256  
 
-- 🔐 JWT + Google OAuth authentication
+✅ **F. Physical Security** - Policy documentation  - **Compliance Manager**: Risk and control management
 
-### SSO Integration
+✅ **G. Operations Security** - Automated scanning workflows  
+
+✅ **H. Communications** - Secure evidence transfer  - **Auditor**: Read-only evidence and report access- 🏢 Multi-tenant company managementCopy the environment files and configure your settings:
+
+✅ **I. System Development** - Security gates in CI/CD  
+
+✅ **J. Vendor Relationships** - Third-party risk assessment  - **Viewer**: Dashboard and basic reporting
+
+✅ **K. Incident Management** - Automated incident workflows  
+
+✅ **L. Business Continuity** - Backup and recovery procedures  - 🔐 JWT + Google OAuth authentication
+
+✅ **M. Compliance** - Multi-framework compliance tracking  
+
+✅ **N. AI-Specific Trust/Safety** - Bias testing, model cards  ### SSO Integration
+
+✅ **O. Audit-Ready Deliverables** - Immutable evidence packages
 
 - Google Workspace- 📊 Real-time audit progress```bash
 
+## 🤝 Contributing
+
 - Azure AD
 
-- Okta- 📋 Comprehensive reporting# Backend environment
+1. Fork the repository
 
-- SAML 2.0
+2. Create feature branch (`git checkout -b feature/amazing-feature`)- Okta- 📋 Comprehensive reporting# Backend environment
+
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+
+4. Push to branch (`git push origin feature/amazing-feature`)- SAML 2.0
+
+5. Open Pull Request
 
 - 🎯 Modern, responsive UIcp backend/.env.example backend/.env
 
+## 📄 License
+
 ## 📈 Pricing Tiers
 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+
+
+## 🏆 Enterprise Ready
 
 ### Starter ($99/month)
 
-- Up to 50 employees## 📄 License# Frontend environment  
+Built for enterprise compliance teams requiring:
 
-- Basic ISO 27001 controls
+- **Audit-ready documentation** with immutable evidence- Up to 50 employees## 📄 License# Frontend environment  
 
-- Monthly reportscp frontend/.env.example frontend/.env.local
+- **Multi-framework compliance** with cross-mapping
 
-- Email support
+- **AI governance** following ISO 42001 standards  - Basic ISO 27001 controls
 
-MIT License - see LICENSE file for details.```
+- **Automated workflows** with human oversight
+
+- **Pipeline security** with HIGH finding blocking- Monthly reportscp frontend/.env.example frontend/.env.local
+
+
+
+---- Email support
+
+
+
+*Compliance made simple. Security made strong. AI made trustworthy.*MIT License - see LICENSE file for details.```
 
 ### Professional ($299/month)
 

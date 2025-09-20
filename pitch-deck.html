@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 27001 Compliance Agent - Investor Pitch</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/reveal.js@4.3.1/dist/reveal.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@4.3.1/dist/reveal.css">
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@4.3.1/dist/theme/black.css">
+    <style>
+        .reveal {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .slides section {
+            text-align: left;
+        }
+        
+        .center {
+            text-align: center !important;
+        }
+        
+        .title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .problem-slide {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .solution-slide {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .market-slide {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .competitive-slide {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .financial-slide {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .team-slide {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+        
+        .funding-slide {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+        
+        .metric-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            display: inline-block;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .metric-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .metric-label {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .competitive-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .competitive-table th,
+        .competitive-table td {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .competitive-table th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+        
+        .checkmark {
+            color: #00ff88;
+            font-size: 1.5em;
+        }
+        
+        .xmark {
+            color: #ff4757;
+            font-size: 1.5em;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .team-member {
+            display: inline-block;
+            margin: 15px;
+            text-align: center;
+            width: 200px;
+        }
+        
+        .team-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+        }
+        
+        .funding-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .funding-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00d4aa);
+            transition: width 2s ease-in-out;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <!-- Slide 1: Title -->
+            <section class="title-slide center">
+                <h1>ISO 27001 Compliance Agent</h1>
+                <h2>AI-Powered Enterprise GRC Platform</h2>
+                <p style="font-size: 1.5em; margin-top: 50px;">Revolutionizing Compliance Automation</p>
+                <p style="font-size: 1.2em;">Series A Funding Presentation</p>
+                <p style="font-size: 1em; margin-top: 50px;">September 2025</p>
+                <div class="slide-number">1/16</div>
+            </section>
+
+            <!-- Slide 2: The Problem -->
+            <section class="problem-slide">
+                <h1>🚨 Enterprise Compliance is Broken</h1>
+                <div style="margin-top: 40px;">
+                    <div class="metric-box">
+                        <div class="metric-number">18-24</div>
+                        <div class="metric-label">Months for ISO 27001 certification</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-number">10+</div>
+                        <div class="metric-label">Disconnected compliance tools</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="metric-box">
+                        <div class="metric-number">40-60%</div>
+                        <div class="metric-label">Time wasted on documentation</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-number">$2M</div>
+                        <div class="metric-label">Average compliance program cost</div>
+                    </div>
+                </div>
+                <h2 style="margin-top: 40px; color: #ff4757;">78% of organizations lack AI governance frameworks</h2>
+                <div class="slide-number">2/16</div>
+            </section>
+
+            <!-- Slide 3: Market Opportunity -->
+            <section class="market-slide">
+                <h1>📈 Massive Market Opportunity</h1>
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+                <div style="margin-top: 30px;">
+                    <div class="metric-box">
+                        <div class="metric-number">$43.2B</div>
+                        <div class="metric-label">TAM by 2028 (15% CAGR)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-number">$8.6B</div>
+                        <div class="metric-label">SAM (Our addressable market)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-number">$430M</div>
+                        <div class="metric-label">SOM by 2028 (5% penetration)</div>
+                    </div>
+                </div>
+                <div class="slide-number">3/16</div>
+            </section>
+
+            <!-- Slide 4: Our Solution -->
+            <section class="solution-slide">
+                <h1>🤖 AI-Native Compliance Platform</h1>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>LangGraph AI Workflows</h3>
+                        <p>Human-in-the-loop automation for critical compliance decisions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Immutable Evidence Vault</h3>
+                        <p>Blockchain-inspired audit trails with chain of custody</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Real-time Security Gates</h3>
+                        <p>CI/CD integration blocking HIGH findings automatically</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📋</div>
+                        <h3>Multi-Framework Support</h3>
+                        <p>ISO 27001, ISO 42001 (AI), SOC 2, GDPR, DPDP-India</p>
+                    </div>
+                </div>
+                <div class="slide-number">4/16</div>
+            </section>
+
+            <!-- Slide 5: Product Demo -->
+            <section class="solution-slide center">
+                <h1>🖥️ Product Demo</h1>
+                <div style="margin-top: 50px;">
+                    <h2>Live Platform Demonstration</h2>
+                    <p style="font-size: 1.3em; margin: 30px 0;">
+                        • Compliance Dashboard Overview<br>
+                        • AI Workflow Editor (LangGraph)<br>
+                        • Security Scan Results<br>
+                        • Evidence Vault Interface<br>
+                        • Audit Report Generation<br>
+                        • Framework Mapping View
+                    </p>
+                    <p style="font-size: 1.1em; color: #00ff88; margin-top: 50px;">
+                        [Switch to live demo environment]
+                    </p>
+                </div>
+                <div class="slide-number">5/16</div>
+            </section>
+
+            <!-- Slide 6: Competitive Advantage -->
+            <section class="competitive-slide">
+                <h1>🏆 Competitive Advantage</h1>
+                <table class="competitive-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Us</th>
+                            <th>Vanta</th>
+                            <th>Drata</th>
+                            <th>Others</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AI-Native</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                        </tr>
+                        <tr>
+                            <td>ISO 42001 (AI Governance)</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                        </tr>
+                        <tr>
+                            <td>Immutable Evidence</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                        </tr>
+                        <tr>
+                            <td>Pipeline Gates</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                            <td><span class="xmark">❌</span></td>
+                        </tr>
+                        <tr>
+                            <td>Multi-Framework</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td>Limited</td>
+                            <td><span class="checkmark">✅</span></td>
+                            <td>Limited</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h2 style="text-align: center; margin-top: 30px;">First-mover advantage in AI governance</h2>
+                <div class="slide-number">6/16</div>
+            </section>
+
+            <!-- Slide 7: Business Model -->
+            <section class="financial-slide">
+                <h1>💰 SaaS Business Model</h1>
+                <div class="feature-grid">
+                    <div class="feature-card" style="background: rgba(103, 58, 183, 0.1);">
+                        <h3>Starter: $99/month</h3>
+                        <p><strong>Target:</strong> SMB (10-50 employees)</p>
+                        <p>• Single framework<br>• Basic security scanning</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(33, 150, 243, 0.1);">
+                        <h3>Professional: $499/month</h3>
+                        <p><strong>Target:</strong> Mid-Market (50-500 employees)</p>
+                        <p>• Multi-framework support<br>• AI governance features</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(76, 175, 80, 0.1);">
+                        <h3>Enterprise: $1,999/month</h3>
+                        <p><strong>Target:</strong> Large Orgs (500+ employees)</p>
+                        <p>• Full platform access<br>• Custom integrations</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(255, 152, 0, 0.1);">
+                        <h3>Unit Economics</h3>
+                        <p>• $8,500 average ACV<br>• $2,500 CAC<br>• 18:1 LTV/CAC ratio<br>• 88% gross margin</p>
+                    </div>
+                </div>
+                <div class="slide-number">7/16</div>
+            </section>
+
+            <!-- Slide 8: Traction -->
+            <section class="financial-slide">
+                <h1>📊 Strong Early Traction</h1>
+                <div class="chart-container">
+                    <canvas id="tractionChart"></canvas>
+                </div>
+                <div style="margin-top: 30px;">
+                    <div class="metric-box" style="background: rgba(76, 175, 80, 0.2);">
+                        <div class="metric-number" style="color: #4CAF50;">99.95%</div>
+                        <div class="metric-label" style="color: #333;">Platform Uptime</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(33, 150, 243, 0.2);">
+                        <div class="metric-number" style="color: #2196F3;">72</div>
+                        <div class="metric-label" style="color: #333;">NPS Score (vs 31 industry)</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 152, 0, 0.2);">
+                        <div class="metric-number" style="color: #FF9800;">130%</div>
+                        <div class="metric-label" style="color: #333;">Net Revenue Retention</div>
+                    </div>
+                </div>
+                <div class="slide-number">8/16</div>
+            </section>
+
+            <!-- Slide 9: Financial Projections -->
+            <section class="financial-slide">
+                <h1>📈 Path to $50M ARR</h1>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+                <div style="margin-top: 30px;">
+                    <div class="metric-box" style="background: rgba(76, 175, 80, 0.2);">
+                        <div class="metric-number" style="color: #4CAF50;">88%</div>
+                        <div class="metric-label" style="color: #333;">Consistent Gross Margin</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(33, 150, 243, 0.2);">
+                        <div class="metric-number" style="color: #2196F3;">36</div>
+                        <div class="metric-label" style="color: #333;">Months to Profitability</div>
+                    </div>
+                    <div class="metric-box" style="background: rgba(255, 152, 0, 0.2);">
+                        <div class="metric-number" style="color: #FF9800;">Year 5</div>
+                        <div class="metric-label" style="color: #333;">EBITDA Positive</div>
+                    </div>
+                </div>
+                <div class="slide-number">9/16</div>
+            </section>
+
+            <!-- Slide 10: Go-to-Market -->
+            <section class="market-slide">
+                <h1>🎯 Go-to-Market Strategy</h1>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Phase 1: Product-Market Fit</h3>
+                        <p><strong>Timeline:</strong> 0-12 months</p>
+                        <p>• AI startups needing ISO 42001<br>• SaaS companies preparing SOC 2<br>• Inbound marketing & partnerships</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Phase 2: Scale & Expansion</h3>
+                        <p><strong>Timeline:</strong> 12-24 months</p>
+                        <p>• Enterprise sales team buildout<br>• Channel partner program<br>• International expansion</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Phase 3: Market Leadership</h3>
+                        <p><strong>Timeline:</strong> 24-36 months</p>
+                        <p>• Strategic acquisitions<br>• Platform ecosystem<br>• AI governance thought leadership</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Customer Acquisition Channels</h3>
+                        <p>• Inbound marketing (40%)<br>• Outbound sales (35%)<br>• Partnerships (20%)<br>• Product-led growth (5%)</p>
+                    </div>
+                </div>
+                <div class="slide-number">10/16</div>
+            </section>
+
+            <!-- Slide 11: Competition -->
+            <section class="competitive-slide">
+                <h1>🥊 Competitive Landscape</h1>
+                <div class="chart-container">
+                    <canvas id="competitorChart"></canvas>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h2>Our Differentiation:</h2>
+                    <p style="font-size: 1.2em;">
+                        ✓ AI governance leadership (ISO 42001)<br>
+                        ✓ Immutable evidence architecture<br>
+                        ✓ Real-time security enforcement<br>
+                        ✓ Built for compliance-first design<br>
+                        ✓ Human-in-the-loop AI workflows
+                    </p>
+                    <h3 style="margin-top: 30px;">Market growing 15% annually - Room for multiple winners</h3>
+                </div>
+                <div class="slide-number">11/16</div>
+            </section>
+
+            <!-- Slide 12: Team -->
+            <section class="team-slide">
+                <h1>👥 Experienced Team</h1>
+                <div style="margin-top: 40px;">
+                    <h2>Founding Team</h2>
+                    <div style="text-align: center;">
+                        <div class="team-member">
+                            <div class="team-avatar">CT</div>
+                            <h4>CTO</h4>
+                            <p>15+ years security compliance experience</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar">AI</div>
+                            <h4>Head of AI</h4>
+                            <p>Former Google AI ethics researcher</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar">VP</div>
+                            <h4>VP Engineering</h4>
+                            <p>Ex-Vanta early employee</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-avatar">CE</div>
+                            <h4>CEO</h4>
+                            <p>Fortune 500 compliance executive</p>
+                        </div>
+                    </div>
+                    <h2 style="margin-top: 40px;">Advisory Board</h2>
+                    <p style="font-size: 1.1em;">
+                        • CISO, Fortune 100 Financial Services<br>
+                        • Former Vanta VP Product<br>
+                        • ISO 27001 Lead Auditor<br>
+                        • AI Ethics Professor, Stanford
+                    </p>
+                </div>
+                <div class="slide-number">12/16</div>
+            </section>
+
+            <!-- Slide 13: Funding Ask -->
+            <section class="funding-slide">
+                <h1>💸 Series A: $12M</h1>
+                <div class="funding-breakdown">
+                    <div class="funding-item">
+                        <h3>Engineering (40%)</h3>
+                        <div class="metric-number" style="color: #673AB7;">$4.8M</div>
+                        <p>• 15 senior engineers<br>• AI/ML infrastructure<br>• Security features</p>
+                    </div>
+                    <div class="funding-item">
+                        <h3>Sales & Marketing (35%)</h3>
+                        <div class="metric-number" style="color: #2196F3;">$4.2M</div>
+                        <p>• 8 sales professionals<br>• Marketing automation<br>• Customer success</p>
+                    </div>
+                    <div class="funding-item">
+                        <h3>Operations (15%)</h3>
+                        <div class="metric-number" style="color: #4CAF50;">$1.8M</div>
+                        <p>• SOC 2, ISO 27001 certs<br>• Legal and regulatory<br>• Infrastructure</p>
+                    </div>
+                    <div class="funding-item">
+                        <h3>Working Capital (10%)</h3>
+                        <div class="metric-number" style="color: #FF9800;">$1.2M</div>
+                        <p>• 18-month runway<br>• Strategic partnerships<br>• Contingency</p>
+                    </div>
+                </div>
+                <div class="slide-number">13/16</div>
+            </section>
+
+            <!-- Slide 14: Exit Strategy -->
+            <section class="financial-slide">
+                <h1>🚀 Clear Path to Exit</h1>
+                <div class="feature-grid">
+                    <div class="feature-card" style="background: rgba(76, 175, 80, 0.1);">
+                        <h3>IPO Path (60% probability)</h3>
+                        <p><strong>Timeline:</strong> 48-60 months</p>
+                        <p>• Revenue: $100M+ ARR<br>• Public multiple: 8x-12x<br>• Est. valuation: $800M-1.2B</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(33, 150, 243, 0.1);">
+                        <h3>Strategic Acquisition (40%)</h3>
+                        <p><strong>Timeline:</strong> 36-48 months</p>
+                        <p>• ServiceNow, Microsoft, Salesforce<br>• Strategic premium: 25-50%<br>• Est. valuation: $1B-1.5B</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(255, 152, 0, 0.1);">
+                        <h3>Recent Comparables</h3>
+                        <p>• LogicGate → ServiceNow: $600M<br>• Vanta IPO target: $3B+<br>• GRC market consolidation</p>
+                    </div>
+                    <div class="feature-card" style="background: rgba(103, 58, 183, 0.1);">
+                        <h3>Value Creation Timeline</h3>
+                        <p>• Series B: Month 24 ($270M)<br>• Series C: Month 36 ($600M)<br>• Exit: Month 48+ ($1B+)</p>
+                    </div>
+                </div>
+                <div class="slide-number">14/16</div>
+            </section>
+
+            <!-- Slide 15: Investment Thesis -->
+            <section class="market-slide">
+                <h1>💎 Why Invest Now</h1>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⏰</div>
+                        <h3>Market Timing</h3>
+                        <p>✓ EU AI Act enforcement 2025<br>✓ Regulatory tsunami creating demand<br>✓ Vanta IPO validating category</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏰</div>
+                        <h3>Competitive Moat</h3>
+                        <p>✓ First-mover in AI governance<br>✓ Strong IP and patent portfolio<br>✓ Network effects through integrations</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Financial Profile</h3>
+                        <p>✓ Capital efficient growth model<br>✓ Strong unit economics (18:1 LTV/CAC)<br>✓ Clear path to profitability</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Team & Execution</h3>
+                        <p>✓ Domain expertise and track record<br>✓ Strong early customer validation<br>✓ Proven ability to execute at scale</p>
+                    </div>
+                </div>
+                <div class="slide-number">15/16</div>
+            </section>
+
+            <!-- Slide 16: Call to Action -->
+            <section class="title-slide center">
+                <h1>🚀 Join Us in Building the Future</h1>
+                <h2 style="margin: 40px 0;">The GRC market is experiencing unprecedented growth</h2>
+                <p style="font-size: 1.3em; margin: 30px 0;">
+                    Our platform uniquely combines compliance automation with AI governance
+                </p>
+                <div class="metric-box" style="margin: 40px auto;">
+                    <div class="metric-number">$43B</div>
+                    <div class="metric-label">Market opportunity with strong tailwinds</div>
+                </div>
+                <h2 style="margin: 40px 0;">Next Steps:</h2>
+                <p style="font-size: 1.2em;">
+                    1. Product demo and customer references<br>
+                    2. Technical deep dive session<br>
+                    3. Term sheet discussion<br>
+                    4. Due diligence process
+                </p>
+                <p style="font-size: 1.1em; margin-top: 50px; color: #00ff88;">
+                    Let's revolutionize enterprise compliance together.
+                </p>
+                <div class="slide-number">16/16</div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Reveal.js
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            transitionSpeed: 'fast',
+            backgroundTransition: 'fade'
+        });
+
+        // Chart configurations
+        Chart.defaults.color = '#fff';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        // Market Size Chart
+        const marketCtx = document.getElementById('marketChart').getContext('2d');
+        new Chart(marketCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Compliance Management', 'Risk Management', 'Audit Management', 'Policy Management'],
+                datasets: [{
+                    data: [18.5, 12.8, 7.2, 4.7],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Global GRC Market Breakdown ($43.2B)',
+                        font: {
+                            size: 18
+                        }
+                    }
+                }
+            }
+        });
+
+        // Traction Chart
+        const tractionCtx = document.getElementById('tractionChart').getContext('2d');
+        new Chart(tractionCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan 2025', 'Mar 2025', 'Jun 2025', 'Sep 2025', 'Dec 2025'],
+                datasets: [{
+                    label: 'Customers',
+                    data: [10, 25, 50, 85, 150],
+                    borderColor: 'rgba(0, 255, 136, 1)',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'ARR ($K)',
+                    data: [85, 200, 425, 680, 1200],
+                    borderColor: 'rgba(255, 206, 84, 1)',
+                    backgroundColor: 'rgba(255, 206, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Revenue Projection Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['2024', '2025', '2026', '2027', '2028'],
+                datasets: [{
+                    label: 'ARR ($M)',
+                    data: [0.425, 1.9, 6.6, 19.5, 49.6],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '5-Year Revenue Projection',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+
+        // Competitor Chart
+        const competitorCtx = document.getElementById('competitorChart').getContext('2d');
+        new Chart(competitorCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Vanta',
+                    data: [{x: 100, y: 2450}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    pointRadius: 15
+                }, {
+                    label: 'Drata',
+                    data: [{x: 50, y: 1400}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    pointRadius: 12
+                }, {
+                    label: 'Secureframe',
+                    data: [{x: 20, y: 200}],
+                    backgroundColor: 'rgba(255, 205, 86, 0.8)',
+                    pointRadius: 10
+                }, {
+                    label: 'LogicGate',
+                    data: [{x: 40, y: 600}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    pointRadius: 11
+                }, {
+                    label: 'Us (Projected)',
+                    data: [{x: 2, y: 38}],
+                    backgroundColor: 'rgba(0, 255, 136, 0.8)',
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'ARR ($M)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Valuation ($M)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Competitive Positioning: ARR vs Valuation',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'f':
+                case 'F':
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        document.documentElement.requestFullscreen();
+                    }
+                    break;
+            }
+        });
+
+        // Add slide transition effects
+        Reveal.addEventListener('slidechanged', function(event) {
+            // Animate progress bars
+            const progressBars = event.currentSlide.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

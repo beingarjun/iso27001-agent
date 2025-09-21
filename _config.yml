@@ -1,0 +1,50 @@
+theme: jekyll-theme-cayman
+title: ISO 27001 Agent
+description: Enterprise GRC Platform with AI Governance
+url: https://beingarjun.github.io/iso27001-agent
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Exclude files
+exclude:
+  - backend/
+  - frontend/node_modules/
+  - frontend/.next/
+  - .env*
+  - .git*
+  - README.md
+
+# Include files  
+include:
+  - pitch-deck.html
+  - index.html
+  - INVESTOR_PITCH.md
+  - FINANCIAL_MODEL.md
+  - MARKET_RESEARCH.md
+  - PRESENTATION_SLIDES.md
+  - PITCH_DECK_GUIDE.md
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# SEO
+author: ISO 27001 Agent Team
+twitter:
+  username: iso27001agent
+social:
+  type: Organization
+  links:
+    - https://github.com/beingarjun/iso27001-agent
